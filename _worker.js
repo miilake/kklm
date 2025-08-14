@@ -166,7 +166,7 @@ export default {
                         },
                     });
                 } else if (路径 == `/${fakeUserID}`) {
-                    const fakeConfig = await 生成配置信息(userID, request.headers.get('Host'), sub, 'CF-Workers-SUB', RproxyIP, url, fakeUserID, fakeHostName, env);
+                    const fakeConfig = await 生成配置信息(userID, request.headers.get('Host'), sub, 'Config-Service', RproxyIP, url, fakeUserID, fakeHostName, env);
                     return new Response(`${fakeConfig}`, { status: 200 });
                 } else if (url.pathname == `/${动态UUID}/edit` || 路径 == `/${userID}/edit`) {
                     return await KV(request, env);
@@ -1495,7 +1495,7 @@ async function 生成配置信息(userID, hostName, sub, UA, RproxyIP, _url, fak
             let cfips = ['104.16.0.0/13'];
             // 请求 Cloudflare CIDR 列表
             try {
-                const response = await fetch('https://raw.githubusercontent.com/cmliu/cmliu/main/CF-CIDR.txt');
+                 const response = await fetch('https://raw.githubusercontent.com/cmliu/cmliu/main/CF-CIDR.txt');
                 if (response.ok) {
                     const data = await response.text();
                     cfips = await 整理(data);
@@ -1604,101 +1604,406 @@ async function 生成配置信息(userID, hostName, sub, UA, RproxyIP, _url, fak
         else 订阅器 += `<br>SUBAPI（订阅转换后端）: <a href='${subProtocol}://${subConverter}/version' target="_blank" rel="noopener noreferrer">${subProtocol}://${subConverter}</a><br>SUBCONFIG（订阅转换配置文件）: <a href='${subConfig}' target="_blank" rel="noopener noreferrer">${subConfig}</a>`;
         const 动态UUID信息 = (uuid != userID) ? `TOKEN: ${uuid}<br>UUIDNow: ${userID}<br>UUIDLow: ${userIDLow}<br>${userIDTime}TIME（动态UUID有效时间）: ${有效时间} 天<br>UPTIME（动态UUID更新时间）: ${更新时间} 时（北京时间）<br><br>` : `${userIDTime}`;
         const 节点配置页 = `
-            ################################################################<br>
-            Subscribe / sub 订阅地址, 点击链接自动 <strong>复制订阅链接</strong> 并 <strong>生成订阅二维码</strong> <br>
-            ---------------------------------------------------------------<br>
-            自适应订阅地址:<br>
-            <a href="javascript:void(0)" onclick="copyToClipboard('https://${proxyhost}${hostName}/${uuid}?sub','qrcode_0')" style="color:blue;text-decoration:underline;cursor:pointer;">https://${proxyhost}${hostName}/${uuid}</a><br>
-            <div id="qrcode_0" style="margin: 10px 10px 10px 10px;"></div>
-            Base64订阅地址:<br>
-            <a href="javascript:void(0)" onclick="copyToClipboard('https://${proxyhost}${hostName}/${uuid}?b64','qrcode_1')" style="color:blue;text-decoration:underline;cursor:pointer;">https://${proxyhost}${hostName}/${uuid}?b64</a><br>
-            <div id="qrcode_1" style="margin: 10px 10px 10px 10px;"></div>
-            clash订阅地址:<br>
-            <a href="javascript:void(0)" onclick="copyToClipboard('https://${proxyhost}${hostName}/${uuid}?clash','qrcode_2')" style="color:blue;text-decoration:underline;cursor:pointer;">https://${proxyhost}${hostName}/${uuid}?clash</a><br>
-            <div id="qrcode_2" style="margin: 10px 10px 10px 10px;"></div>
-            singbox订阅地址:<br>
-            <a href="javascript:void(0)" onclick="copyToClipboard('https://${proxyhost}${hostName}/${uuid}?sb','qrcode_3')" style="color:blue;text-decoration:underline;cursor:pointer;">https://${proxyhost}${hostName}/${uuid}?sb</a><br>
-            <div id="qrcode_3" style="margin: 10px 10px 10px 10px;"></div>
-            loon订阅地址:<br>
-            <a href="javascript:void(0)" onclick="copyToClipboard('https://${proxyhost}${hostName}/${uuid}?loon','qrcode_5')" style="color:blue;text-decoration:underline;cursor:pointer;">https://${proxyhost}${hostName}/${uuid}?loon</a><br>
-            <div id="qrcode_5" style="margin: 10px 10px 10px 10px;"></div>
-            <strong><a href="javascript:void(0);" id="noticeToggle" onclick="toggleNotice()">实用订阅技巧∨</a></strong><br>
-                <div id="noticeContent" class="notice-content" style="display: none;">
-                    <strong>1.</strong> 如您使用的是 PassWall、PassWall2 路由插件，订阅编辑的 <strong>用户代理(User-Agent)</strong> 设置为 <strong>PassWall</strong> 即可；<br>
-                    <br>
-                    <strong>2.</strong> 如您使用的是 SSR+ 路由插件，推荐使用 <strong>Base64订阅地址</strong> 进行订阅；<br>
-                    <br>
-                    <strong>3.</strong> 快速切换 <a href='${atob('aHR0cHM6Ly9naXRodWIuY29tL2NtbGl1L1dvcmtlclZsZXNzMnN1Yg==')}'>优选订阅生成器</a> 至：sub.google.com，您可将"?sub=sub.google.com"参数添加到链接末尾，例如：<br>
-                    &nbsp;&nbsp;https://${proxyhost}${hostName}/${uuid}<strong>?sub=sub.google.com</strong><br>
-                    <br>
-                    <strong>4.</strong> 快速更换 PROXYIP 至：proxyip.cmliussss.net:443，您可将"?proxyip=proxyip.cmliussss.net:443"参数添加到链接末尾，例如：<br>
-                    &nbsp;&nbsp; https://${proxyhost}${hostName}/${uuid}<strong>?proxyip=proxyip.cmliussss.net:443</strong><br>
-                    <br>
-                    <strong>5.</strong> 快速更换 SOCKS5 至：user:password@127.0.0.1:1080，您可将"?socks5=user:password@127.0.0.1:1080"参数添加到链接末尾，例如：<br>
-                    &nbsp;&nbsp;https://${proxyhost}${hostName}/${uuid}<strong>?socks5=user:password@127.0.0.1:1080</strong><br>
-                    <br>
-                    <strong>6.</strong> 如需指定多个参数则需要使用'&'做间隔，例如：<br>
-                    &nbsp;&nbsp;https://${proxyhost}${hostName}/${uuid}?sub=sub.google.com<strong>&</strong>proxyip=proxyip.cmliussss.net<br>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>配置中心</title>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>
+                    * {
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
+                    }
+                    body {
+                        width: 100vw;
+                        min-height: 100vh;
+                        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        color: #333;
+                        line-height: 1.6;
+                    }
+                    .header {
+                        background: rgba(255, 255, 255, 0.95);
+                        padding: 20px 0;
+                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                        backdrop-filter: blur(10px);
+                        position: sticky;
+                        top: 0;
+                        z-index: 100;
+                    }
+                    .header-content {
+                        max-width: 1200px;
+                        margin: 0 auto;
+                        padding: 0 20px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                    }
+                    .header h1 {
+                        font-size: 2.2em;
+                        color: #2c3e50;
+                        font-weight: 300;
+                    }
+                    .nav-buttons {
+                        display: flex;
+                        gap: 15px;
+                    }
+                    .nav-btn {
+                        padding: 10px 20px;
+                        background: linear-gradient(135deg, #3498db, #2980b9);
+                        color: white;
+                        text-decoration: none;
+                        border-radius: 8px;
+                        font-weight: 500;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+                    }
+                    .nav-btn:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+                    }
+                    .nav-btn.secondary {
+                        background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+                        box-shadow: 0 4px 15px rgba(149, 165, 166, 0.3);
+                    }
+                    .nav-btn.secondary:hover {
+                        box-shadow: 0 6px 20px rgba(149, 165, 166, 0.4);
+                    }
+                    .container {
+                        max-width: 1200px;
+                        margin: 0 auto;
+                        padding: 40px 20px;
+                    }
+                    .section {
+                        background: rgba(255, 255, 255, 0.95);
+                        border-radius: 15px;
+                        padding: 30px;
+                        margin-bottom: 30px;
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                        backdrop-filter: blur(10px);
+                    }
+                    .section-title {
+                        font-size: 1.5em;
+                        color: #2c3e50;
+                        margin-bottom: 20px;
+                        padding-bottom: 10px;
+                        border-bottom: 2px solid #ecf0f1;
+                        font-weight: 500;
+                    }
+                    .subscription-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                        gap: 20px;
+                        margin-bottom: 30px;
+                    }
+                    .subscription-item {
+                        background: #f8f9fa;
+                        border-radius: 10px;
+                        padding: 20px;
+                        border-left: 4px solid #3498db;
+                        transition: all 0.3s ease;
+                    }
+                    .subscription-item:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+                    }
+                    .subscription-label {
+                        font-weight: 600;
+                        color: #2c3e50;
+                        margin-bottom: 10px;
+                        font-size: 1.1em;
+                    }
+                    .subscription-link {
+                        color: #3498db;
+                        text-decoration: none;
+                        word-break: break-all;
+                        font-family: 'Consolas', 'Monaco', monospace;
+                        font-size: 0.9em;
+                        cursor: pointer;
+                        transition: color 0.3s ease;
+                    }
+                    .subscription-link:hover {
+                        color: #2980b9;
+                        text-decoration: underline;
+                    }
+                    .qrcode-container {
+                        margin-top: 15px;
+                        text-align: center;
+                        padding: 10px;
+                        background: white;
+                        border-radius: 8px;
+                        display: none;
+                    }
+                    .info-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                        gap: 15px;
+                    }
+                    .info-item {
+                        background: #f8f9fa;
+                        padding: 15px;
+                        border-radius: 8px;
+                        border-left: 4px solid #27ae60;
+                    }
+                    .info-label {
+                        font-weight: 600;
+                        color: #2c3e50;
+                        margin-bottom: 5px;
+                    }
+                    .info-value {
+                        font-family: 'Consolas', 'Monaco', monospace;
+                        color: #555;
+                        word-break: break-all;
+                    }
+                    .config-section {
+                        background: #f8f9fa;
+                        border-radius: 10px;
+                        padding: 20px;
+                        margin: 20px 0;
+                        border-left: 4px solid #e74c3c;
+                    }
+                    .config-content {
+                        font-family: 'Consolas', 'Monaco', monospace;
+                        background: white;
+                        padding: 15px;
+                        border-radius: 8px;
+                        white-space: pre-wrap;
+                        word-break: break-all;
+                        font-size: 0.9em;
+                        line-height: 1.4;
+                        max-height: 300px;
+                        overflow-y: auto;
+                        border: 1px solid #ddd;
+                    }
+                    .tips-section {
+                        background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+                        border-radius: 10px;
+                        padding: 20px;
+                        margin: 20px 0;
+                    }
+                    .tips-toggle {
+                        color: #8e44ad;
+                        cursor: pointer;
+                        font-weight: 600;
+                        text-decoration: none;
+                        font-size: 1.1em;
+                    }
+                    .tips-toggle:hover {
+                        color: #7d3c98;
+                    }
+                    .tips-content {
+                        margin-top: 15px;
+                        display: none;
+                        color: #4a148c;
+                        line-height: 1.8;
+                    }
+                    .tips-content strong {
+                        color: #6a1b9a;
+                    }
+                    .copy-btn {
+                        background: linear-gradient(135deg, #27ae60, #229954);
+                        color: white;
+                        border: none;
+                        padding: 8px 15px;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 0.9em;
+                        margin-left: 10px;
+                        transition: all 0.3s ease;
+                    }
+                    .copy-btn:hover {
+                        transform: translateY(-1px);
+                        box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+                    }
+                    @media (max-width: 768px) {
+                        .header-content {
+                            flex-direction: column;
+                            gap: 15px;
+                        }
+                        .nav-buttons {
+                            flex-wrap: wrap;
+                            justify-content: center;
+                        }
+                        .subscription-grid {
+                            grid-template-columns: 1fr;
+                        }
+                        .info-grid {
+                            grid-template-columns: 1fr;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div class="header-content">
+                        <h1>配置中心</h1>
+                        <div class="nav-buttons">
+                            <a href="/${uuid}/edit" class="nav-btn secondary">配置管理</a>
+                            <a href="/${uuid}/bestip" class="nav-btn">IP优选</a>
+                        </div>
+                    </div>
                 </div>
-            <script src="https://cdn.jsdelivr.net/npm/@keeex/qrcodejs-kx@1.0.2/qrcode.min.js"></script>
-            <script>
-            function copyToClipboard(text, qrcode) {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert('已复制到剪贴板');
-                }).catch(err => {
-                    console.error('复制失败:', err);
-                });
-                const qrcodeDiv = document.getElementById(qrcode);
-                qrcodeDiv.innerHTML = '';
-                new QRCode(qrcodeDiv, {
-                    text: text,
-                    width: 220, // 调整宽度
-                    height: 220, // 调整高度
-                    colorDark: "#000000", // 二维码颜色
-                    colorLight: "#ffffff", // 背景颜色
-                    correctLevel: QRCode.CorrectLevel.Q, // 设置纠错级别
-                    scale: 1 // 调整像素颗粒度
-                });
-            }
+                <div class="container">
+                    <div class="section">
+                        <div class="section-title">📱 订阅地址</div>
+                        <p style="margin-bottom: 20px; color: #666;">点击链接自动复制订阅地址并生成二维码</p>
+                        <div class="subscription-grid">
+                            <div class="subscription-item">
+                                <div class="subscription-label">自适应订阅</div>
+                                <div class="subscription-link" onclick="copyToClipboard('https://${proxyhost}${hostName}/${uuid}','qrcode_0')">https://${proxyhost}${hostName}/${uuid}</div>
+                                <div id="qrcode_0" class="qrcode-container"></div>
+                            </div>
+                            <div class="subscription-item">
+                                <div class="subscription-label">Base64订阅</div>
+                                <div class="subscription-link" onclick="copyToClipboard('https://${proxyhost}${hostName}/${uuid}?b64','qrcode_1')">https://${proxyhost}${hostName}/${uuid}?b64</div>
+                                <div id="qrcode_1" class="qrcode-container"></div>
+                            </div>
+                            <div class="subscription-item">
+                                <div class="subscription-label">Clash订阅</div>
+                                <div class="subscription-link" onclick="copyToClipboard('https://${proxyhost}${hostName}/${uuid}?clash','qrcode_2')">https://${proxyhost}${hostName}/${uuid}?clash</div>
+                                <div id="qrcode_2" class="qrcode-container"></div>
+                            </div>
+                            <div class="subscription-item">
+                                <div class="subscription-label">Singbox订阅</div>
+                                <div class="subscription-link" onclick="copyToClipboard('https://${proxyhost}${hostName}/${uuid}?sb','qrcode_3')">https://${proxyhost}${hostName}/${uuid}?sb</div>
+                                <div id="qrcode_3" class="qrcode-container"></div>
+                            </div>
+                            <div class="subscription-item">
+                                <div class="subscription-label">Loon订阅</div>
+                                <div class="subscription-link" onclick="copyToClipboard('https://${proxyhost}${hostName}/${uuid}?loon','qrcode_5')">https://${proxyhost}${hostName}/${uuid}?loon</div>
+                                <div id="qrcode_5" class="qrcode-container"></div>
+                            </div>
+                        </div>
+                        <div class="tips-section">
+                            <a href="javascript:void(0);" id="noticeToggle" onclick="toggleNotice()" class="tips-toggle">💡 使用技巧 ∨</a>
+                            <div id="noticeContent" class="tips-content">
+                                <p><strong>1.</strong> 如您使用的是 PassWall、PassWall2 路由插件，订阅编辑的 <strong>用户代理(User-Agent)</strong> 设置为 <strong>PassWall</strong> 即可</p>
+                                <p><strong>2.</strong> 如您使用的是 SSR+ 路由插件，推荐使用 <strong>Base64订阅地址</strong> 进行订阅</p>
+                                <p><strong>3.</strong> 快速切换订阅生成器至：sub.google.com，您可将"?sub=sub.google.com"参数添加到链接末尾，例如：<br>
+                                <code>https://${proxyhost}${hostName}/${uuid}?sub=sub.google.com</code></p>
+                                <p><strong>4.</strong> 快速更换代理地址，您可将"?proxyip=代理地址:端口"参数添加到链接末尾，例如：<br>
+                                <code>https://${proxyhost}${hostName}/${uuid}?proxyip=代理地址:443</code></p>
+                                <p><strong>5.</strong> 快速更换 SOCKS5 至：user:password@127.0.0.1:1080，您可将"?socks5=user:password@127.0.0.1:1080"参数添加到链接末尾，例如：<br>
+                                <code>https://${proxyhost}${hostName}/${uuid}?socks5=user:password@127.0.0.1:1080</code></p>
+                                <p><strong>6.</strong> 如需指定多个参数则需要使用'&'做间隔，例如：<br>
+                                <code>https://${proxyhost}${hostName}/${uuid}?sub=sub.google.com&proxyip=proxyip.cmliussss.net</code></p>
+                            </div>
+                        </div>
+                    </div>
 
-            function toggleNotice() {
-                const noticeContent = document.getElementById('noticeContent');
-                const noticeToggle = document.getElementById('noticeToggle');
-                if (noticeContent.style.display === 'none') {
-                    noticeContent.style.display = 'block';
-                    noticeToggle.textContent = '实用订阅技巧∧';
-                } else {
-                    noticeContent.style.display = 'none'; 
-                    noticeToggle.textContent = '实用订阅技巧∨';
+                    <div class="section">
+                        <div class="section-title">⚙️ 配置信息</div>
+                        <div class="info-grid">
+                            ${动态UUID信息 ? `<div class="info-item"><div class="info-label">动态信息</div><div class="info-value">${动态UUID信息.replace(/<br>/g, '<br>')}</div></div>` : ''}
+                            <div class="info-item">
+                                <div class="info-label">主机地址</div>
+                                <div class="info-value">${hostName}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">用户标识</div>
+                                <div class="info-value">${userID}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">备用标识</div>
+                                <div class="info-value">${fakeUserID}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">用户代理</div>
+                                <div class="info-value">${UA}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">证书验证</div>
+                                <div class="info-value">${SCV}</div>
+                            </div>
+                        </div>
+                        ${订阅器 ? `<div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #3498db;"><div class="info-label">订阅服务</div><div class="info-value">${订阅器}</div></div>` : ''}
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">🔗 V2Ray配置</div>
+                        <div class="subscription-item">
+                            <div class="subscription-label">V2Ray链接</div>
+                            <div class="subscription-link" onclick="copyToClipboard('${v2ray}','qrcode_v2ray')">${v2ray}</div>
+                            <div id="qrcode_v2ray" class="qrcode-container"></div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">⚔️ Clash配置</div>
+                        <div class="config-section">
+                            <div class="config-content">${clash}</div>
+                        </div>
+                    </div>
+
+                    ${cmad ? `<div class="section"><div class="section-title">📢 公告信息</div><div style="padding: 20px; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #f39c12;">${cmad}</div></div>` : ''}
+                </div>
+                <script src="https://cdn.jsdelivr.net/npm/@keeex/qrcodejs-kx@1.0.2/qrcode.min.js"></script>
+                <script>
+                function copyToClipboard(text, qrcode) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        // 创建成功提示
+                        const toast = document.createElement('div');
+                        toast.textContent = '✅ 已复制到剪贴板';
+                        toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#27ae60;color:white;padding:12px 20px;border-radius:8px;z-index:1000;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+                        document.body.appendChild(toast);
+                        setTimeout(() => document.body.removeChild(toast), 3000);
+                    }).catch(err => {
+                        console.error('复制失败:', err);
+                        alert('复制失败，请手动复制');
+                    });
+
+                    // 显示二维码
+                    const qrcodeDiv = document.getElementById(qrcode);
+                    if (qrcodeDiv.style.display === 'block') {
+                        qrcodeDiv.style.display = 'none';
+                        qrcodeDiv.innerHTML = '';
+                    } else {
+                        // 隐藏其他二维码
+                        document.querySelectorAll('.qrcode-container').forEach(div => {
+                            div.style.display = 'none';
+                            div.innerHTML = '';
+                        });
+
+                        qrcodeDiv.innerHTML = '';
+                        qrcodeDiv.style.display = 'block';
+                        new QRCode(qrcodeDiv, {
+                            text: text,
+                            width: 200,
+                            height: 200,
+                            colorDark: "#000000",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.M
+                        });
+                    }
                 }
-            }
-            </script>
-            ---------------------------------------------------------------<br>
-            ################################################################<br>
-            ${FileName} 配置信息<br>
-            ---------------------------------------------------------------<br>
-            ${动态UUID信息}HOST: ${hostName}<br>
-            UUID: ${userID}<br>
-            FKID: ${fakeUserID}<br>
-            UA: ${UA}<br>
-            SCV（跳过TLS证书验证）: ${SCV}<br>
-            ${订阅器}<br>
-            ---------------------------------------------------------------<br>
-            ################################################################<br>
-            v2ray<br>
-            ---------------------------------------------------------------<br>
-            <a href="javascript:void(0)" onclick="copyToClipboard('${v2ray}','qrcode_v2ray')" style="color:blue;text-decoration:underline;cursor:pointer;">${v2ray}</a><br>
-            <div id="qrcode_v2ray" style="margin: 10px 10px 10px 10px;"></div>
-            ---------------------------------------------------------------<br>
-            ################################################################<br>
-            clash-meta<br>
-            ---------------------------------------------------------------<br>
-            ${clash}<br>
-            ---------------------------------------------------------------<br>
-            ################################################################<br>
-            ${cmad}
+
+                function toggleNotice() {
+                    const noticeContent = document.getElementById('noticeContent');
+                    const noticeToggle = document.getElementById('noticeToggle');
+                    if (noticeContent.style.display === 'none' || noticeContent.style.display === '') {
+                        noticeContent.style.display = 'block';
+                        noticeToggle.textContent = '💡 使用技巧 ∧';
+                    } else {
+                        noticeContent.style.display = 'none';
+                        noticeToggle.textContent = '💡 使用技巧 ∨';
+                    }
+                }
+
+                // 页面加载完成后初始化
+                document.addEventListener('DOMContentLoaded', function() {
+                    // 初始化提示内容为隐藏状态
+                    const noticeContent = document.getElementById('noticeContent');
+                    if (noticeContent) {
+                        noticeContent.style.display = 'none';
+                    }
+                });
+                </script>
+            </body>
+            </html>
             `;
-        return `<div style="font-size:13px;">${节点配置页}</div>`;
+        return 节点配置页;
     } else {
         if (typeof fetch != 'function') {
             return 'Error: fetch is not available in this environment.';
@@ -1764,7 +2069,7 @@ async function 生成配置信息(userID, hostName, sub, UA, RproxyIP, _url, fak
             console.log(`虚假订阅: ${url}`);
         }
 
-        if (!userAgent.includes(('CF-Workers-SUB').toLowerCase()) && !_url.searchParams.has('b64') && !_url.searchParams.has('base64')) {
+        if (!userAgent.includes(('Config-Service').toLowerCase()) && !_url.searchParams.has('b64') && !_url.searchParams.has('base64')) {
             if ((userAgent.includes('clash') && !userAgent.includes('nekobox')) || (_url.searchParams.has('clash') && !userAgent.includes('subconverter'))) {
                 url = `${subProtocol}://${subConverter}/sub?target=clash&url=${encodeURIComponent(url)}&insert=false&config=${encodeURIComponent(subConfig)}&emoji=${subEmoji}&list=false&tfo=false&scv=${SCV}&fdn=false&sort=false&new_name=true`;
                 isBase64 = false;
@@ -2209,103 +2514,171 @@ async function KV(request, env, txt = 'ADD.txt') {
             <!DOCTYPE html>
             <html>
             <head>
-                <title>优选订阅列表</title>
+                <title>配置管理</title>
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <style>
-                    body {
+                    * {
                         margin: 0;
-                        padding: 15px; /* 调整padding */
+                        padding: 0;
                         box-sizing: border-box;
-                        font-size: 13px; /* 设置全局字体大小 */
+                    }
+                    body {
+                        width: 100vw;
+                        height: 100vh;
+                        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        color: #333;
+                        overflow-x: hidden;
+                    }
+                    .header {
+                        background: rgba(255, 255, 255, 0.95);
+                        padding: 20px 40px;
+                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                        backdrop-filter: blur(10px);
+                    }
+                    .header h1 {
+                        font-size: 2em;
+                        color: #2c3e50;
+                        font-weight: 300;
+                    }
+                    .main-container {
+                        max-width: 1800px;
+                        margin: 0 auto;
+                        padding: 40px;
+                        height: calc(100vh - 100px);
+                        display: flex;
+                        flex-direction: column;
                     }
                     .editor-container {
-                        width: 100%;
-                        max-width: 100%;
-                        margin: 0 auto;
+                        flex: 1;
+                        background: rgba(255, 255, 255, 0.95);
+                        border-radius: 15px;
+                        padding: 30px;
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                        backdrop-filter: blur(10px);
+                        display: flex;
+                        flex-direction: column;
                     }
                     .editor {
-                        width: 100%;
-                        height: 520px; /* 调整高度 */
-                        margin: 15px 0; /* 调整margin */
-                        padding: 10px; /* 调整padding */
-                        box-sizing: border-box;
-                        border: 1px solid #ccc;
-                        border-radius: 4px;
-                        font-size: 13px;
-                        line-height: 1.5;
-                        overflow-y: auto;
+                        flex: 1;
+                        min-height: 600px;
+                        padding: 20px;
+                        border: 2px solid #e9ecef;
+                        border-radius: 10px;
+                        font-size: 14px;
+                        line-height: 1.6;
+                        font-family: 'Consolas', 'Monaco', monospace;
+                        background: #fafbfc;
                         resize: none;
+                        transition: border-color 0.3s ease;
                     }
-                    .save-container {
-                        margin-top: 8px; /* 调整margin */
+                    .editor:focus {
+                        outline: none;
+                        border-color: #3498db;
+                        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+                    }
+                    .controls {
+                        margin-top: 20px;
                         display: flex;
                         align-items: center;
-                        gap: 10px; /* 调整gap */
+                        gap: 15px;
+                        flex-wrap: wrap;
                     }
-                    .save-btn, .back-btn {
-                        padding: 6px 15px; /* 调整padding */
-                        color: white;
+                    .btn {
+                        padding: 12px 24px;
                         border: none;
-                        border-radius: 4px;
+                        border-radius: 8px;
                         cursor: pointer;
+                        font-size: 14px;
+                        font-weight: 500;
+                        transition: all 0.3s ease;
+                        text-decoration: none;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 8px;
                     }
-                    .save-btn {
-                        background: #4CAF50;
-                    }
-                    .save-btn:hover {
-                        background: #45a049;
-                    }
-                    .back-btn {
-                        background: #666;
-                    }
-                    .back-btn:hover {
-                        background: #555;
-                    }
-                    .bestip-btn {
-                        background: #2196F3;
-                        padding: 6px 15px;
+                    .btn-primary {
+                        background: linear-gradient(135deg, #3498db, #2980b9);
                         color: white;
-                        border: none;
-                        border-radius: 4px;
-                        cursor: pointer;
                     }
-                    .bestip-btn:hover {
-                        background: #1976D2;
+                    .btn-primary:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
                     }
-                    .save-status {
+                    .btn-success {
+                        background: linear-gradient(135deg, #27ae60, #229954);
+                        color: white;
+                    }
+                    .btn-success:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+                    }
+                    .btn-secondary {
+                        background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+                        color: white;
+                    }
+                    .btn-secondary:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 5px 15px rgba(149, 165, 166, 0.3);
+                    }
+                    .status-message {
                         color: #666;
+                        font-size: 14px;
+                        margin-left: auto;
+                    }
+                    .notice-toggle {
+                        color: #3498db;
+                        cursor: pointer;
+                        font-weight: 500;
+                        text-decoration: none;
+                        margin-bottom: 20px;
+                        display: inline-block;
+                    }
+                    .notice-toggle:hover {
+                        color: #2980b9;
                     }
                     .notice-content {
                         display: none;
-                        margin-top: 10px;
-                        font-size: 13px;
-                        color: #333;
+                        background: #f8f9fa;
+                        padding: 20px;
+                        border-radius: 10px;
+                        margin-bottom: 20px;
+                        border-left: 4px solid #3498db;
+                        font-size: 14px;
+                        line-height: 1.6;
                     }
                 </style>
             </head>
             <body>
-                ################################################################<br>
-                ${FileName} 优选订阅列表:<br>
-                ---------------------------------------------------------------<br>
-                &nbsp;&nbsp;<strong><a href="javascript:void(0);" id="noticeToggle" onclick="toggleNotice()">注意事项∨</a></strong><br>
-                <div id="noticeContent" class="notice-content">
-                    ${decodeURIComponent(atob('JTA5JTA5JTA5JTA5JTA5JTNDc3Ryb25nJTNFMS4lM0MlMkZzdHJvbmclM0UlMjBBRERBUEklMjAlRTUlQTYlODIlRTYlOUUlOUMlRTYlOTglQUYlRTUlOEYlOEQlRTQlQkIlQTNJUCVFRiVCQyU4QyVFNSU4RiVBRiVFNCVCRCU5QyVFNCVCOCVCQVBST1hZSVAlRTclOUElODQlRTglQUYlOUQlRUYlQkMlOEMlRTUlOEYlQUYlRTUlQjAlODYlMjIlM0Zwcm94eWlwJTNEdHJ1ZSUyMiVFNSU4RiU4MiVFNiU5NSVCMCVFNiVCNyVCQiVFNSU4QSVBMCVFNSU4OCVCMCVFOSU5MyVCRSVFNiU4RSVBNSVFNiU5QyVBQiVFNSVCMCVCRSVFRiVCQyU4QyVFNCVCRSU4QiVFNSVBNiU4MiVFRiVCQyU5QSUzQ2JyJTNFCiUwOSUwOSUwOSUwOSUwOSUyNm5ic3AlM0IlMjZuYnNwJTNCaHR0cHMlM0ElMkYlMkZyYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tJTJGY21saXUlMkZXb3JrZXJWbGVzczJzdWIlMkZtYWluJTJGYWRkcmVzc2VzYXBpLnR4dCUzQ3N0cm9uZyUzRSUzRnByb3h5aXAlM0R0cnVlJTNDJTJGc3Ryb25nJTNFJTNDYnIlM0UlM0NiciUzRQolMDklMDklMDklMDklMDklM0NzdHJvbmclM0UyLiUzQyUyRnN0cm9uZyUzRSUyMEFEREFQSSUyMCVFNSVBNiU4MiVFNiU5RSU5QyVFNiU5OCVBRiUyMCUzQ2ElMjBocmVmJTNEJTI3aHR0cHMlM0ElMkYlMkZnaXRodWIuY29tJTJGWElVMiUyRkNsb3VkZmxhcmVTcGVlZFRlc3QlMjclM0VDbG91ZGZsYXJlU3BlZWRUZXN0JTNDJTJGYSUzRSUyMCVFNyU5QSU4NCUyMGNzdiUyMCVFNyVCQiU5MyVFNiU5RSU5QyVFNiU5NiU4NyVFNCVCQiVCNiVFRiVCQyU4QyVFNCVCRSU4QiVFNSVBNiU4MiVFRiVCQyU5QSUzQ2JyJTNFCiUwOSUwOSUwOSUwOSUwOSUyNm5ic3AlM0IlMjZuYnNwJTNCaHR0cHMlM0ElMkYlMkZyYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tJTJGY21saXUlMkZXb3JrZXJWbGVzczJzdWIlMkZtYWluJTJGQ2xvdWRmbGFyZVNwZWVkVGVzdC5jc3YlM0NiciUzRSUzQ2JyJTNFCiUwOSUwOSUwOSUwOSUwOSUyNm5ic3AlM0IlMjZuYnNwJTNCLSUyMCVFNSVBNiU4MiVFOSU5QyU4MCVFNiU4QyU4NyVFNSVBRSU5QTIwNTMlRTclQUIlQUYlRTUlOEYlQTMlRTUlOEYlQUYlRTUlQjAlODYlMjIlM0Zwb3J0JTNEMjA1MyUyMiVFNSU4RiU4MiVFNiU5NSVCMCVFNiVCNyVCQiVFNSU4QSVBMCVFNSU4OCVCMCVFOSU5MyVCRSVFNiU4RSVBNSVFNiU5QyVBQiVFNSVCMCVCRSVFRiVCQyU4QyVFNCVCRSU4QiVFNSVBNiU4MiVFRiVCQyU5QSUzQ2JyJTNFCiUwOSUwOSUwOSUwOSUwOSUyNm5ic3AlM0IlMjZuYnNwJTNCaHR0cHMlM0ElMkYlMkZyYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tJTJGY21saXUlMkZXb3JrZXJWbGVzczJzdWIlMkZtYWluJTJGQ2xvdWRmbGFyZVNwZWVkVGVzdC5jc3YlM0NzdHJvbmclM0UlM0Zwb3J0JTNEMjA1MyUzQyUyRnN0cm9uZyUzRSUzQ2JyJTNFJTNDYnIlM0UKJTA5JTA5JTA5JTA5JTA5JTI2bmJzcCUzQiUyNm5ic3AlM0ItJTIwJUU1JUE2JTgyJUU5JTlDJTgwJUU2JThDJTg3JUU1JUFFJTlBJUU4JThBJTgyJUU3JTgyJUI5JUU1JUE0JTg3JUU2JUIzJUE4JUU1JThGJUFGJUU1JUIwJTg2JTIyJTNGaWQlM0RDRiVFNCVCQyU5OCVFOSU4MCU4OSUyMiVFNSU4RiU4MiVFNiU5NSVCMCVFNiVCNyVCQiVFNSU4QSVBMCVFNSU4OCVCMCVFOSU5MyVCRSVFNiU4RSVBNSVFNiU5QyVBQiVFNSVCMCVCRSVFRiVCQyU4QyVFNCVCRSU4QiVFNSVBNiU4MiVFRiVCQyU5QSUzQ2JyJTNFCiUwOSUwOSUwOSUwOSUwOSUyNm5ic3AlM0IlMjZuYnNwJTNCaHR0cHMlM0ElMkYlMkZyYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tJTJGY21saXUlMkZXb3JrZXJWbGVzczJzdWIlMkZtYWluJTJGQ2xvdWRmbGFyZVNwZWVkVGVzdC5jc3YlM0NzdHJvbmclM0UlM0ZpZCUzRENGJUU0JUJDJTk4JUU5JTgwJTg5JTNDJTJGc3Ryb25nJTNFJTNDYnIlM0UlM0NiciUzRQolMDklMDklMDklMDklMDklMjZuYnNwJTNCJTI2bmJzcCUzQi0lMjAlRTUlQTYlODIlRTklOUMlODAlRTYlOEMlODclRTUlQUUlOUElRTUlQTQlOUElRTQlQjglQUElRTUlOEYlODIlRTYlOTUlQjAlRTUlODglOTklRTklOUMlODAlRTglQTYlODElRTQlQkQlQkYlRTclOTQlQTglMjclMjYlMjclRTUlODElOUElRTklOTclQjQlRTklOUElOTQlRUYlQkMlOEMlRTQlQkUlOEIlRTUlQTYlODIlRUYlQkMlOUElM0NiciUzRQolMDklMDklMDklMDklMDklMjZuYnNwJTNCJTI2bmJzcCUzQmh0dHBzJTNBJTJGJTJGcmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSUyRmNtbGl1JTJGV29ya2VyVmxlc3Myc3ViJTJGbWFpbiUyRkNsb3VkZmxhcmVTcGVlZFRlc3QuY3N2JTNGaWQlM0RDRiVFNCVCQyU5OCVFOSU4MCU4OSUzQ3N0cm9uZyUzRSUyNiUzQyUyRnN0cm9uZyUzRXBvcnQlM0QyMDUzJTNDYnIlM0U='))}
+                <div class="header">
+                    <h1>配置管理系统</h1>
                 </div>
+                <div class="main-container">
+                    <div class="editor-container">
+                        <a href="javascript:void(0);" id="noticeToggle" onclick="toggleNotice()" class="notice-toggle">使用说明 ∨</a>
+                        <div id="noticeContent" class="notice-content">
+                            <strong>配置格式说明：</strong><br>
+                            每行一个地址，支持以下格式：<br>
+                            • 域名:端口 (如: example.com:443)<br>
+                            • IP地址:端口 (如: 192.168.1.1:8080)<br>
+                            • IPv6地址:端口 (如: [2606:4700::]:2053)<br><br>
+                            <strong>注意事项：</strong><br>
+                            • 请确保地址格式正确<br>
+                            • 建议使用标准端口<br>
+                            • 支持批量导入和编辑
+                        </div>
                 <div class="editor-container">
                     ${hasKV ? `
                     <textarea class="editor" 
                         placeholder="${decodeURIComponent(atob('QUREJUU3JUE0JUJBJUU0JUJFJThCJUVGJUJDJTlBCnZpc2EuY24lMjMlRTQlQkMlOTglRTklODAlODklRTUlOUYlOUYlRTUlOTAlOEQKMTI3LjAuMC4xJTNBMTIzNCUyM0NGbmF0CiU1QjI2MDYlM0E0NzAwJTNBJTNBJTVEJTNBMjA1MyUyM0lQdjYKCiVFNiVCMyVBOCVFNiU4NCU4RiVFRiVCQyU5QQolRTYlQUYlOEYlRTglQTElOEMlRTQlQjglODAlRTQlQjglQUElRTUlOUMlQjAlRTUlOUQlODAlRUYlQkMlOEMlRTYlQTAlQkMlRTUlQkMlOEYlRTQlQjglQkElMjAlRTUlOUMlQjAlRTUlOUQlODAlM0ElRTclQUIlQUYlRTUlOEYlQTMlMjMlRTUlQTQlODclRTYlQjMlQTgKSVB2NiVFNSU5QyVCMCVFNSU5RCU4MCVFOSU5QyU4MCVFOCVBNiU4MSVFNyU5NCVBOCVFNCVCOCVBRCVFNiU4QiVBQyVFNSU4RiVCNyVFNiU4QiVBQyVFOCVCNSVCNyVFNiU5RCVBNSVFRiVCQyU4QyVFNSVBNiU4MiVFRiVCQyU5QSU1QjI2MDYlM0E0NzAwJTNBJTNBJTVEJTNBMjA1MwolRTclQUIlQUYlRTUlOEYlQTMlRTQlQjglOEQlRTUlODYlOTklRUYlQkMlOEMlRTklQkIlOTglRTglQUUlQTQlRTQlQjglQkElMjA0NDMlMjAlRTclQUIlQUYlRTUlOEYlQTMlRUYlQkMlOEMlRTUlQTYlODIlRUYlQkMlOUF2aXNhLmNuJTIzJUU0JUJDJTk4JUU5JTgwJTg5JUU1JTlGJTlGJUU1JTkwJThECgoKQUREQVBJJUU3JUE0JUJBJUU0JUJFJThCJUVGJUJDJTlBCmh0dHBzJTNBJTJGJTJGcmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSUyRmNtbGl1JTJGV29ya2VyVmxlc3Myc3ViJTJGcmVmcyUyRmhlYWRzJTJGbWFpbiUyRmFkZHJlc3Nlc2FwaS50eHQKCiVFNiVCMyVBOCVFNiU4NCU4RiVFRiVCQyU5QUFEREFQSSVFNyU5QiVCNCVFNiU4RSVBNSVFNiVCNyVCQiVFNSU4QSVBMCVFNyU5QiVCNCVFOSU5MyVCRSVFNSU4RCVCMyVFNSU4RiVBRg=='))}"
                         id="content">${content}</textarea>
-                    <div class="save-container">
-                        <button class="back-btn" onclick="goBack()">返回配置页</button>
-                        <button class="bestip-btn" onclick="goBestIP()">在线优选IP</button>
-                        <button class="save-btn" onclick="saveContent(this)">保存</button>
-                        <span class="save-status" id="saveStatus"></span>
-                    </div>
-                    <br>
-                    ################################################################<br>
-                    ${cmad}
+                        <div class="controls">
+                            <button class="btn btn-secondary" onclick="goBack()">返回主页</button>
+                            <button class="btn btn-primary" onclick="goBestIP()">IP优选工具</button>
+                            <button class="btn btn-success" onclick="saveContent(this)">保存配置</button>
+                            <span class="status-message" id="saveStatus"></span>
+                        </div>
                     ` : '<p>未绑定KV空间</p>'}
                 </div>
         
@@ -2735,11 +3108,6 @@ async function bestIP(request, env, txt = 'ADD.txt') {
                 response = await fetch('https://raw.githubusercontent.com/cmliu/ACL4SSR/main/baipiao.txt');
                 const text = response.ok ? await response.text() : '';
 
-                // 解析并过滤符合端口的IP
-                const allLines = text.split('\n')
-                    .map(line => line.trim())
-                    .filter(line => line && !line.startsWith('#'));
-
                 const validIps = [];
 
                 for (const line of allLines) {
@@ -3092,43 +3460,89 @@ async function bestIP(request, env, txt = 'ADD.txt') {
     <!DOCTYPE html>
     <html>
     <head>
-    <title>Cloudflare IP优选</title>
+    <title>IP优选工具</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body {
-            width: 80%;
-            margin: 0 auto;
-            font-family: Tahoma, Verdana, Arial, sans-serif;
-            padding: 20px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .ip-list {
-            background-color: #f5f5f5;
-            padding: 10px;
-            border-radius: 5px;
-            max-height: 400px;
+        body {
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            overflow-x: hidden;
+        }
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .header h1 {
+            font-size: 2em;
+            color: #2c3e50;
+            font-weight: 300;
+        }
+        .main-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 40px;
+            height: calc(100vh - 100px);
             overflow-y: auto;
         }
-        .ip-item {
-            margin: 2px 0;
-            font-family: monospace;
+        .content-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
         }
-        .stats {
-            background-color: #e3f2fd;
-            padding: 15px;
-            border-radius: 5px;
+        .ip-list {
+            background: #fafbfc;
+            border: 2px solid #e9ecef;
+            padding: 20px;
+            border-radius: 10px;
+            max-height: 500px;
+            overflow-y: auto;
             margin: 20px 0;
         }
-        .test-info {
-            margin-top: 15px;
-            padding: 12px;
-            background-color: #f3e5f5;
-            border: 1px solid #ce93d8;
+        .ip-item {
+            margin: 8px 0;
+            padding: 8px 12px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: white;
             border-radius: 6px;
+            border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+        }
+        .ip-item:hover {
+            background: #f8f9fa;
+            transform: translateX(5px);
+        }
+        .stats {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .test-info {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+            border-radius: 10px;
             color: #4a148c;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         .test-info p {
-            margin: 0;
+            margin: 8px 0;
             font-size: 14px;
-            line-height: 1.5;
+            line-height: 1.6;
         }
         .proxy-warning {
             color: #d32f2f !important;
@@ -3160,102 +3574,139 @@ async function bestIP(request, env, txt = 'ADD.txt') {
             line-height: 1.6;
         }
         .test-controls {
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
+            margin: 30px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         .port-selector {
-            margin: 10px 0;
+            margin: 15px 0;
         }
         .port-selector label {
-            font-weight: bold;
-            margin-right: 10px;
+            font-weight: 600;
+            margin-right: 15px;
+            color: #2c3e50;
         }
         .port-selector select {
-            padding: 5px 10px;
+            padding: 10px 15px;
             font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+        .port-selector select:focus {
+            outline: none;
+            border-color: #3498db;
         }
         .button-group {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             flex-wrap: wrap;
-            margin-top: 15px;
+            margin-top: 20px;
         }
         .test-button {
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #27ae60, #229954);
             color: white;
-            padding: 15px 32px;
+            padding: 15px 30px;
             text-align: center;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
             border: none;
-            border-radius: 4px;
-            transition: background-color 0.3s;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+        .test-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
         }
         .test-button:disabled {
-            background-color: #cccccc;
+            background: #bdc3c7;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         .save-button {
-            background-color: #2196F3;
+            background: linear-gradient(135deg, #3498db, #2980b9);
             color: white;
-            padding: 15px 32px;
+            padding: 15px 30px;
             text-align: center;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
             border: none;
-            border-radius: 4px;
-            transition: background-color 0.3s;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        .save-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
         }
         .save-button:disabled {
-            background-color: #cccccc;
+            background: #bdc3c7;
             cursor: not-allowed;
-        }
-        .save-button:not(:disabled):hover {
-            background-color: #1976D2;
+            transform: none;
+            box-shadow: none;
         }
         .append-button {
-            background-color: #FF9800;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
             color: white;
-            padding: 15px 32px;
+            padding: 15px 30px;
             text-align: center;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
             border: none;
-            border-radius: 4px;
-            transition: background-color 0.3s;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+        }
+        .append-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
         }
         .append-button:disabled {
-            background-color: #cccccc;
+            background: #bdc3c7;
             cursor: not-allowed;
-        }
-        .append-button:not(:disabled):hover {
-            background-color: #F57C00;
+            transform: none;
+            box-shadow: none;
         }
         .edit-button {
-            background-color: #9C27B0;
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
             color: white;
-            padding: 15px 32px;
+            padding: 15px 30px;
             text-align: center;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
             border: none;
-            border-radius: 4px;
-            transition: background-color 0.3s;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3);
         }
         .edit-button:hover {
-            background-color: #7B1FA2;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(155, 89, 182, 0.4);
         }
         .back-button {
             background-color: #607D8B;
@@ -3415,21 +3866,24 @@ async function bestIP(request, env, txt = 'ADD.txt') {
     </style>
     </head>
     <body>
-    <h1>在线优选IP</h1>
-    
-    ${!isChina ? `
-    <div class="warning-notice">
-        <h3>🚨 代理检测警告</h3>
-        <p><strong>检测到您当前很可能处于代理/VPN环境中！</strong></p>
-        <p>在代理状态下进行的IP优选测试结果将不准确，可能导致：</p>
-        <ul>
-            <li>延迟数据失真，无法反映真实网络状况</li>
-            <li>优选出的IP在直连环境下表现不佳</li>
-            <li>测试结果对实际使用场景参考价值有限</li>
-        </ul>
-        <p><strong>建议操作：</strong>请关闭所有代理软件（VPN、科学上网工具等），确保处于直连网络环境后重新访问本页面。</p>
+    <div class="header">
+        <h1>IP优选工具</h1>
     </div>
-    ` : ''}
+    <div class="main-container">
+        <div class="content-wrapper">
+            ${!isChina ? `
+            <div class="warning-notice">
+                <h3>🚨 网络环境提醒</h3>
+                <p><strong>检测到您当前的网络环境可能影响测试结果！</strong></p>
+                <p>为确保测试准确性，建议：</p>
+                <ul>
+                    <li>使用稳定的网络连接进行测试</li>
+                    <li>避免在网络高峰期进行测试</li>
+                    <li>测试结果仅供参考</li>
+                </ul>
+                <p><strong>提示：</strong>请在合适的网络环境下进行测试以获得最佳结果。</p>
+            </div>
+            ` : ''}
 
     <div class="stats">
         <h2>统计信息</h2>
@@ -4313,7 +4767,8 @@ async function bestIP(request, env, txt = 'ADD.txt') {
             updateButtonStates();
         }
     </script>
-    
+        </div>
+    </div>
     </body>
     </html>
     `;
@@ -4543,26 +4998,77 @@ async function nginx() {
 	<!DOCTYPE html>
 	<html>
 	<head>
-	<title>Welcome to nginx!</title>
+	<title>服务器状态</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
 		body {
-			width: 35em;
-			margin: 0 auto;
-			font-family: Tahoma, Verdana, Arial, sans-serif;
+			width: 100vw;
+			height: 100vh;
+			background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: #333;
+		}
+		.container {
+			background: rgba(255, 255, 255, 0.95);
+			padding: 60px 80px;
+			border-radius: 20px;
+			box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+			text-align: center;
+			max-width: 800px;
+			backdrop-filter: blur(10px);
+		}
+		h1 {
+			font-size: 3.5em;
+			margin-bottom: 30px;
+			color: #2c3e50;
+			font-weight: 300;
+		}
+		p {
+			font-size: 1.3em;
+			line-height: 1.8;
+			margin-bottom: 25px;
+			color: #555;
+		}
+		a {
+			color: #3498db;
+			text-decoration: none;
+			transition: color 0.3s ease;
+		}
+		a:hover {
+			color: #2980b9;
+		}
+		.status-indicator {
+			display: inline-block;
+			width: 12px;
+			height: 12px;
+			background: #27ae60;
+			border-radius: 50%;
+			margin-right: 10px;
+			animation: pulse 2s infinite;
+		}
+		@keyframes pulse {
+			0% { opacity: 1; }
+			50% { opacity: 0.5; }
+			100% { opacity: 1; }
 		}
 	</style>
 	</head>
 	<body>
-	<h1>Welcome to nginx!</h1>
-	<p>If you see this page, the nginx web server is successfully installed and
-	working. Further configuration is required.</p>
-	
-	<p>For online documentation and support please refer to
-	<a href="http://nginx.org/">nginx.org</a>.<br/>
-	Commercial support is available at
-	<a href="http://nginx.com/">nginx.com</a>.</p>
-	
-	<p><em>Thank you for using nginx.</em></p>
+	<div class="container">
+		<h1><span class="status-indicator"></span>服务运行正常</h1>
+		<p>系统已成功启动并正在运行中，所有服务组件工作正常。</p>
+		<p>如需技术支持或了解更多信息，请访问相关文档。</p>
+		<p><em>感谢您的使用。</em></p>
+	</div>
 	</body>
 	</html>
 	`
